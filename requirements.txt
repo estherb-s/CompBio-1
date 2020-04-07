@@ -1,0 +1,6 @@
+pandas
+xenaPython
+matplotlib
+numpy
+scipy
+
