@@ -3,4 +3,5 @@ xenaPython
 matplotlib
 numpy
 scipy
+wget
 
