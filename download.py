@@ -7,8 +7,8 @@ from pathlib import Path
 Path("./data/").mkdir(parents=True, exist_ok=True)
 
 if not os.path.exists('./data/TCGA-LUAD.tsv') and not os.path.exists('./data/TCGA-LUSC.tsv'):
-    luad = "https://gdc.xenahubs.net/download/TCGA-LUAD.htseq_counts.tsv.gz"
-    lusc = "https://gdc.xenahubs.net/download/TCGA-LUSC.htseq_counts.tsv.gz"
+    luad = "https://gdc.xenahubs.net/download/TCGA-LUAD.mutect2_snv.tsv.gz"
+    lusc = "https://gdc.xenahubs.net/download/TCGA-LUSC.mutect2_snv.tsv.gz"
 
     print("\nDownloading luad")
     wget.download(luad, "./data/")
