@@ -21,6 +21,9 @@ def load_and_fillna(path):
     Returns:
         [pandas.DataFrame] -- [dataframe loaded with CSV]
     """
+    if not exists(path):
+        print("That directory / file doesn't exist")
+        raise NotADirectoryError
 
     df = pd.read_csv(path, sep="\t", header=0)
     df.fillna(df.mean())
@@ -47,7 +50,7 @@ def pca_prep(df, n_comp):
     dfPCA = pca.transform(dataScaled)
     temp = ["PC-"+ str(x) for x in range(1,n_comp+1)]
     extended = pd.DataFrame(pca.components_,columns=dataScaled.columns,index = temp)
-    return extended.T
+    return extended
 
 
 def add_target(df, t):
@@ -68,7 +71,23 @@ def add_target(df, t):
 
 
 
-def run_random_forest(df, random_state, n_estimators, n_importance,  debug=True):
+def run_random_forest(df, random_state, n_estimators, n_importance,  debug=True, name=""):
+    """
+    Runs random forest on the data provided
+
+    Arguments:
+        df {pandas.DataFrame} -- DataFrame to be modified
+        random_state {int} -- random state param for random forest
+        n_estimators {int} -- number of estimators
+        n_importance {int} -- Top N important features to extract
+
+    Keyword Arguments:
+        debug {bool} -- see print output logs if debug is true (default: {True})
+        name {str} -- name to identify the chart better when running multiple random forests (default: {""})
+
+    Returns:
+        list -- top important respective features
+    """
     features = list(df.columns[:-1])
 
     Y = df['Target']
@@ -91,13 +110,33 @@ def run_random_forest(df, random_state, n_estimators, n_importance,  debug=True)
     randForest.fit(Xtrain,Ytrain)
 
     f_importance = randForest.feature_importances_
-
     sortedIdx = np.argsort(f_importance)[-n_importance:]
-    plt.title('Random Forest Feature Importances')
+    important_features = [features[i] for i in sortedIdx]
+    plt.title(f'Random Forest Feature Importances for {name} data')
     plt.barh(range(len(sortedIdx)), f_importance[sortedIdx], color='b', align='center')
-    plt.yticks(range(len(sortedIdx)), [features[i] for i in sortedIdx])
+    plt.yticks(range(len(sortedIdx)), important_features)
     plt.xlabel('Relative Importance')
     plt.show()
 
     if debug:
-        print(f'Top {n_importance} features: {sortedIdx}')
+        print(f'Top {n_importance} features: {important_features[::-1]}')
+
+    return important_features[::-1]
+
+
+
+def test():
+    df = load_and_fillna("data/TCGA-LUAD.tsv")
+    df2 = load_and_fillna("data/TCGA-LUSC.tsv")
+    principalCompLUAD = pca_prep(df, 5)
+    principalCompLUSC = pca_prep(df2, 5)
+    principalCompLUAD['Target'] = '0'
+    principalCompLUSC['Target'] = '1'
+    # clean up memory
+    del df
+    del df2
+    lung = pd.concat([principalCompLUAD,principalCompLUSC])
+    important = run_random_forest(df=lung, random_state=42, n_estimators=1000, n_importance=20, name="Lung")
+
+if __name__ == "__main__":
+    test()
