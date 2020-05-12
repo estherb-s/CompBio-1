@@ -23,8 +23,11 @@ def load_and_fillna(path):
     """
     if not exists(path):
         print("That directory / file doesn't exist")
-        raise NotADirectoryError
+        link = str(input("Link to the zipped file: "))
+        name = str(input("Filename to save as, include extensions such as .tsv: "))
+        download_tsv(link=link, name=name)
 
+    path = "data/"+name
     df = pd.read_csv(path, sep="\t", header=0)
     df.fillna(df.mean())
     df['id2'] = df.index
@@ -126,7 +129,7 @@ def run_random_forest(df, random_state, n_estimators, n_importance,  debug=True,
 
 
 def test():
-    df = load_and_fillna("data/TCGA-LUAD.tsv")
+    df = load_and_fillna("data/aa.tsv")
     df2 = load_and_fillna("data/TCGA-LUSC.tsv")
     principalCompLUAD = pca_prep(df, 5)
     principalCompLUSC = pca_prep(df2, 5)
