@@ -26,8 +26,8 @@ def load_and_fillna(path):
         link = str(input("Link to the zipped file: "))
         name = str(input("Filename to save as, include extensions such as .tsv: "))
         download_tsv(link=link, name=name)
+        path = "data/"+name
 
-    path = "data/"+name
     df = pd.read_csv(path, sep="\t", header=0)
     df.fillna(df.mean())
     df['id2'] = df.index
