@@ -4,4 +4,6 @@ matplotlib
 numpy
 scipy
 wget
+eli5
+sklearn
 
