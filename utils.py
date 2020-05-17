@@ -192,7 +192,7 @@ def cleanup_tsv():
 
 
 
-if __name__ == "__main__":
+def main():
     files = {
         "LUSC" : "https://gdc.xenahubs.net/download/TCGA-LUSC.htseq_counts.tsv.gz",
         "LUAD" : "https://gdc.xenahubs.net/download/TCGA-LUAD.htseq_counts.tsv.gz",
@@ -204,7 +204,12 @@ if __name__ == "__main__":
         path = f"data/{file}.pkl"
         if not exists(path):
             download_tsv(link, file+".tsv")
+            print("Converting to pickle")
             df = load_and_fillna(path.replace("pkl", "tsv"))
             save_to_pickle(df, file+".pkl")
             save_to_pickle(df, "std_"+file+".pkl", standardise=True)
             cleanup_tsv()
+
+    print("Done")
+if __name__ == "__main__":
+    main()
