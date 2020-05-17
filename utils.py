@@ -11,7 +11,6 @@ import seaborn as sns
 import pickle
 import glob, os
 from os.path import exists
-from download import download_tsv
 import gzip
 import wget
 from sys import argv
