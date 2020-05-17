@@ -8,8 +8,40 @@ from sklearn import tree
 from sklearn.decomposition import PCA
 from sklearn import preprocessing
 import seaborn as sns
+import pickle
+import glob, os
 from os.path import exists
 from download import download_tsv
+import gzip
+import wget
+from sys import argv
+from pathlib import Path
+
+def download_tsv(link, name):
+    """
+    Download files from xena for exploration, extract and save as name.tsv
+
+    Arguments:
+        link {str} -- [Link to download the file from]
+        name {str} -- [save data as name.tsv]
+    """
+
+    Path("./data/").mkdir(parents=True, exist_ok=True)
+
+    print(f"\nDownloading {link}")
+    wget.download(link, "./data/")
+    print("\nDone downloading...")
+    print(".\n.\n.\n.")
+    print("Extracting")
+    for file in glob.glob(os.path.join("./data/", '*.gz')):
+        inF = gzip.open(file, 'rb')
+        s = inF.read()
+        name = "./data/"+name
+        with open(name, 'wb') as out_file:
+            out_file.write(s)
+            inF.close()
+        os.remove(file)
+    print("Extraction done")
 
 def load_and_fillna(path):
     """
@@ -127,19 +159,53 @@ def run_random_forest(df, random_state, n_estimators, n_importance,  debug=True,
     return important_features[::-1]
 
 
+def save_to_pickle(df, filename, standardise=False):
+    """
+    Given a dataframe, save it to pickle for faster fetch
 
-def test():
-    df = load_and_fillna("data/aa.tsv")
-    df2 = load_and_fillna("data/TCGA-LUSC.tsv")
-    principalCompLUAD = pca_prep(df, 5)
-    principalCompLUSC = pca_prep(df2, 5)
-    principalCompLUAD['Target'] = '0'
-    principalCompLUSC['Target'] = '1'
-    # clean up memory
-    del df
-    del df2
-    lung = pd.concat([principalCompLUAD,principalCompLUSC])
-    important = run_random_forest(df=lung, random_state=42, n_estimators=1000, n_importance=20, name="Lung")
+    Arguments:
+        df {pd.DataFrame} -- Already loaded dataframe
+        filename {string} -- Filename to save it as
+
+    Keyword Arguments:
+        standardise {bool} -- If you need to standardise the data or not (default: {False})
+    """
+
+    if standardise:
+        df = pd.DataFrame(StandardScaler().fit_transform(df), columns = df.columns)
+
+    filename = filename if "." in filename else filename+".pkl"
+    pickle.dump(df, open(f"data/{filename}", "wb"))
+
+def cleanup_tsv():
+    path = "data/"
+    if not exists(path):
+        print("Nothing to clean up")
+        return
+
+    for file in glob.glob(os.path.join("./data/", '*.tsv')):
+        df = load_and_fillna(file)
+        filename = file.replace("tsv", "pkl")
+        filename = filename.split("/")[-1].split("-")[-1]
+        save_to_pickle(df, filename)
+        save_to_pickle(df, "std_"+filename ,standardise=True)
+        os.remove(file)
+
+
 
 if __name__ == "__main__":
-    test()
+    files = {
+        "LUSC" : "https://gdc.xenahubs.net/download/TCGA-LUSC.htseq_counts.tsv.gz",
+        "LUAD" : "https://gdc.xenahubs.net/download/TCGA-LUAD.htseq_counts.tsv.gz",
+        "KIRP" : "https://gdc.xenahubs.net/download/TCGA-KIRP.htseq_counts.tsv.gz",
+        "KIRC" : "https://gdc.xenahubs.net/download/TCGA-KIRC.htseq_counts.tsv.gz"
+    }
+
+    for file,link in files.items():
+        path = f"data/{file}.pkl"
+        if not exists(path):
+            download_tsv(link, file+".tsv")
+            df = load_and_fillna(path.replace("pkl", "tsv"))
+            save_to_pickle(df, file+".pkl")
+            save_to_pickle(df, "std_"+file+".pkl", standardise=True)
+            cleanup_tsv()
