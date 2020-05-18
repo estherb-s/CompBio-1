@@ -11,6 +11,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier
 from os.path import exists
 from pathlib import Path
+from xgboost import XGBClassifier
 import joblib
 
 
@@ -99,4 +100,25 @@ def run_decision_trees(Xtrain, Xtest, Ytrain, Ytest, name):
     dt_model.fit(Xtrain, Ytrain)
     joblib.dump(dt_model, f"models/{name}_DT.mdl")
 
+    print(f"Done training, model saved to model/{name}_DT.mdl")
+
+
+def run_xgboost(Xtrain, Xtest, Ytrain, Ytest, name):
+    # XGBoost
+    xgb_model = Pipeline([ # Add a scale_pos_weight to make it balanced : 1 - y.mean()
+                        ("model", XGBClassifier(scale_pos_weight=(-0.5), n_jobs=-1))])
+
+    gs = GridSearchCV(xgb_model, {"model__max_depth": [5, 10],
+                                "model__min_child_weight": [5, 10],
+                                "model__n_estimators": [25]},
+                    n_jobs=-1, cv=5, scoring="accuracy")
+
+    gs.fit(Xtrain, Ytrain)
+
+    print(gs.best_params_)
+    print(gs.best_score_)
+
+    xgb_model.set_params(**gs.best_params_)
+    xgb_model.fit(Xtrain, Ytrain)
+    joblib.dump(xgb_model, f"models/{name}_XGB.mdl")
     print(f"Done training, model saved to model/{name}_DT.mdl")
