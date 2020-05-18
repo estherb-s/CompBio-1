@@ -6,4 +6,5 @@ scipy
 wget
 eli5
 sklearn
-
+shap
+xgboost
