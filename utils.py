@@ -62,7 +62,8 @@ def load_and_fillna(path):
     df = pd.read_csv(path, sep="\t", header=0)
     df.fillna(df.mean())
     df['id2'] = df.index
-    df.set_index('Ensembl_ID',inplace=True)
+    # df.set_index('Ensembl_ID',inplace=True)
+    df.set_index('Gene Symbol',inplace=True) # For CNV files
     return df.T
 
 
@@ -197,7 +198,9 @@ def main():
         "LUSC" : "https://gdc.xenahubs.net/download/TCGA-LUSC.htseq_counts.tsv.gz",
         "LUAD" : "https://gdc.xenahubs.net/download/TCGA-LUAD.htseq_counts.tsv.gz",
         "KIRP" : "https://gdc.xenahubs.net/download/TCGA-KIRP.htseq_counts.tsv.gz",
-        "KIRC" : "https://gdc.xenahubs.net/download/TCGA-KIRC.htseq_counts.tsv.gz"
+        "KIRC" : "https://gdc.xenahubs.net/download/TCGA-KIRC.htseq_counts.tsv.gz", 
+        "LUAD_CNV" : "https://gdc.xenahubs.net/download/TCGA-LUAD.gistic.tsv.gz", 
+        "LUSC_CNV" : "https://gdc.xenahubs.net/download/TCGA-LUSC.gistic.tsv.gz"
     }
 
     for file,link in files.items():
