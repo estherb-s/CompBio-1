@@ -177,6 +177,7 @@ def save_to_pickle(df, filename, standardise=False):
     filename = filename if "." in filename else filename+".pkl"
     pickle.dump(df, open(f"data/{filename}", "wb"))
 
+
 def cleanup_tsv():
     path = "data/"
     if not exists(path):
@@ -192,14 +193,41 @@ def cleanup_tsv():
         os.remove(file)
 
 
+def extract_feature_weights(x):
+    """
+    Extracts feature weights from eli5 explainer object (basically the .show thing, save it to a variable and pass in that variable)
+    Example:
+        x = eli5.explain_weights(lr_model.named_steps["model"], feature_names=feature_names, top=20)
+        extract_feature_weights(x)
+
+    Arguments:
+        x {eli5.explainer} -- see example above
+
+    Returns:
+        [dict] -- [containing feature and weight mapping]
+    """
+
+    feature_dict = {}
+
+    x = str(x.targets[0]).split("(")
+
+    for i in x:
+        var = i.split(",")
+        for j, item in enumerate(var):
+            item = item.strip()
+            if "feature=" in item:
+                feature_dict[item.split("=")[1]] = var[j+1].split("=")[1]
+
+    return feature_dict
+
 
 def main():
     files = {
         "LUSC" : "https://gdc.xenahubs.net/download/TCGA-LUSC.htseq_counts.tsv.gz",
         "LUAD" : "https://gdc.xenahubs.net/download/TCGA-LUAD.htseq_counts.tsv.gz",
         "KIRP" : "https://gdc.xenahubs.net/download/TCGA-KIRP.htseq_counts.tsv.gz",
-        "KIRC" : "https://gdc.xenahubs.net/download/TCGA-KIRC.htseq_counts.tsv.gz", 
-        "LUAD_CNV" : "https://gdc.xenahubs.net/download/TCGA-LUAD.gistic.tsv.gz", 
+        "KIRC" : "https://gdc.xenahubs.net/download/TCGA-KIRC.htseq_counts.tsv.gz",
+        "LUAD_CNV" : "https://gdc.xenahubs.net/download/TCGA-LUAD.gistic.tsv.gz",
         "LUSC_CNV" : "https://gdc.xenahubs.net/download/TCGA-LUSC.gistic.tsv.gz"
     }
 
