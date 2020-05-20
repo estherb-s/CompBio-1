@@ -4,7 +4,7 @@ __pycache__/
 *$py.class
 *.png
 *.DS_Store
-models/*
+*.icloud
 
 
 # C extensions
