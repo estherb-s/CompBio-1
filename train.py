@@ -104,9 +104,9 @@ def run_decision_trees(Xtrain, Xtest, Ytrain, Ytest, name):
 
 
 def run_xgboost(Xtrain, Xtest, Ytrain, Ytest, name):
-    # XGBoost
+    print("Starting XGBoost")
     xgb_model = Pipeline([ # Add a scale_pos_weight to make it balanced : 1 - y.mean()
-                        ("model", XGBClassifier(scale_pos_weight=(-0.5), n_jobs=-1))])
+                        ("model", XGBClassifier(scale_pos_weight=(0.5), n_jobs=-1))])
 
     gs = GridSearchCV(xgb_model, {"model__max_depth": [5, 10],
                                 "model__min_child_weight": [5, 10],
