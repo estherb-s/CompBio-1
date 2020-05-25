@@ -23,6 +23,9 @@ svm_model = Pipeline([("model", svm.SVC(kernel="linear", class_weight="balanced"
 dt_model = Pipeline([("model", DecisionTreeClassifier(class_weight="balanced"))])
 # Random Forest
 rf_model = Pipeline([("model", RandomForestClassifier(class_weight="balanced", n_estimators=200, n_jobs=-1))])
+# XGBoost
+xgb_model = Pipeline([ # Add a scale_pos_weight to make it balanced : 1 - y.mean()
+                        ("model", XGBClassifier(scale_pos_weight=(0.5), n_jobs=-1))])
 
 
 Path("./models/").mkdir(parents=True, exist_ok=True)
@@ -105,8 +108,6 @@ def run_decision_trees(Xtrain, Xtest, Ytrain, Ytest, name):
 
 def run_xgboost(Xtrain, Xtest, Ytrain, Ytest, name):
     print("Starting XGBoost")
-    xgb_model = Pipeline([ # Add a scale_pos_weight to make it balanced : 1 - y.mean()
-                        ("model", XGBClassifier(scale_pos_weight=(0.5), n_jobs=-1))])
 
     gs = GridSearchCV(xgb_model, {"model__max_depth": [5, 10],
                                 "model__min_child_weight": [5, 10],
@@ -121,4 +122,12 @@ def run_xgboost(Xtrain, Xtest, Ytrain, Ytest, name):
     xgb_model.set_params(**gs.best_params_)
     xgb_model.fit(Xtrain, Ytrain)
     joblib.dump(xgb_model, f"models/{name}_XGB.mdl")
-    print(f"Done training, model saved to model/{name}_DT.mdl")
+    print(f"Done training, model saved to model/{name}_XGB.mdl")
+
+
+def train_all(Xtrain, Xtest, Ytrain, Ytest, name):
+    run_svm(Xtrain, Xtest, Ytrain, Ytest, name)
+    run_decision_trees(Xtrain, Xtest, Ytrain, Ytest, name)
+    run_logistic_regression(Xtrain, Xtest, Ytrain, Ytest, name)
+    run_random_forest(Xtrain, Xtest, Ytrain, Ytest, name)
+    run_xgboost(Xtrain, Xtest, Ytrain, Ytest, name)

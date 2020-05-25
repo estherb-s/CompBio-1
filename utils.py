@@ -221,6 +221,18 @@ def extract_feature_weights(x):
     return feature_dict
 
 
+def extract_features(df):
+    features = list(df.columns[:-1])
+    y = df['Target']
+    X = df[features]
+    return X,y
+
+def split_data(X,y):
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size = 0.2, random_state = 42, stratify=y)
+    return X_train, X_test, y_train, y_test
+
+
+
 def main():
     files = {
         "LUSC" : "https://gdc.xenahubs.net/download/TCGA-LUSC.htseq_counts.tsv.gz",
